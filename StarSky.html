@@ -1,0 +1,136 @@
+﻿<!DOCTYPE HTML>
+ <html lang="en">
+  <meta charset="utf-8">
+  <head><title>Draw a Circle</title>
+   <style type="text/css">
+    body {
+      background-color: #000000;
+      margin: 0px;
+      overflow: hidden;
+    }
+   </style>
+  </head>
+ <body>
+ <canvas id="canvas"></canvas>
+<script>
+  var canvas=document.getElementById("canvas");
+  var context = canvas.getContext('2d');
+  var canvasWidth = window.screen.width;
+  var canvasHeight = window.screen.height; 
+  var particles = [];
+  var options={
+	"shape":"circular",//形状,目前就只有星星和圆 参数类型为 start or circular
+	"speed":60,//越小越快,60为最佳
+	"number":20,//越多越卡
+	"variable_Size":true,//体积是否可变
+	"shadow":true,//影子是否需要
+	"shadow_degree":0.2,//0-1 越小影子越明显
+	"x_deviation":5,//X轴的偏移，1-10最好，为0则竖直方向移动
+	"y_deviation":5,//Y轴的偏移，1-10最好
+	"gravity":0.4,//下落的重力加速度，当此值和y-deviation同时为0的时候才会向水平方向移动
+	"radius":10,//当形状为星星时的半径
+	"angle":10,//当形状为星星时的旋转角度
+	"variable_angle":true,//当形状为星星时是否旋转
+	"color":"rgba(255, 255, 255,1)",//物体的填充颜色
+	"border-color":"#e03"//物体的边框颜色
+  }
+  
+  init();
+  
+  function init() {
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight; 
+	setInterval(loop, options.speed);
+  }
+  
+  function loop(){
+  if(!options.shadow)
+  {
+	context.clearRect(0,0,canvasWidth, canvasHeight);
+  }
+  else{
+	context.fillStyle = "rgba(0,0,0,"+options.shadow_degree+")";
+    context.fillRect(0,0, canvasWidth, canvasHeight);
+  }
+
+ 
+    
+//在一些随机位置产生并画粒子。
+   var particle = new Particle(Math.random()*canvasWidth, Math.random()*canvasHeight);
+   particles.push(particle); 
+ 
+   for (i=0; i<particles.length; i++) {
+     var particle = particles[i]; 
+     particle.render(context); 
+	 particle.update();
+  }
+  
+  if (particles.length>options.number){
+     particles.shift();//shift() 方法用于把数组的第一个元素从其中删除
+    }
+  }
+  
+  function Particle (xPos, yPos) { 
+   this.xPos = xPos;
+   this.yPos = yPos;
+
+   this.xVel = options.x_deviation;
+   this.yVel = options.y_deviation;
+   this.gravity = options.gravity;
+   
+   this.render = function(context){
+
+	if(options.shape=="start")
+	{
+		var R=options.variable_Size==true?Math.random() * options.radius:options.radius;
+		var a=options.variable_angle==true?Math.random() * options.angle:options.angle;
+		drawStart(context,this.xPos,this.yPos,R,a);
+	}
+	else if(options.shape=="circular")
+	{
+		var R=options.variable_Size==true?Math.random() * options.radius:options.radius;
+		drawCircular(context,this.xPos,this.yPos,R);
+	}
+   }
+   
+   this.update = function(){ 
+	 this.yVel += this.gravity;
+     this.yPos += this.yVel;
+     this.xPos += this.xVel;
+  }
+ }
+
+ 
+	function drawStart(ctx,x,y,R,a)
+	{
+		ctx.beginPath();
+		for(var i=0;i<5;i++)	
+		{		
+			ctx.lineTo(Math.cos( (18 + i * 72 - a) / 180 * Math.PI) * R + x, 
+			          -Math.sin( (18 + i * 72 - a) / 180 * Math.PI) * R + y);
+
+			ctx.lineTo(Math.cos( (54 + i * 72 - a) / 180 * Math.PI)* R / 2+x,	
+					  -Math.sin( (54 + i * 72 - a) / 180 * Math.PI)* R / 2+y);
+		}
+		ctx.closePath();
+		ctx.fillStyle=options.color;
+		ctx.strokeStyle=options.border;
+		ctx.stroke();
+		ctx.fill();
+	}
+	
+	function drawCircular(ctx,x,y,R)
+	{
+		ctx.beginPath();
+		ctx.fillStyle = options.color;
+		ctx.strokeStyle=options.border;
+		ctx.arc(x,y,R,0, Math.PI*2, true);
+		ctx.stroke();
+		ctx.fill();
+	}
+
+</script>
+</body>
+</html>
+
+ 
